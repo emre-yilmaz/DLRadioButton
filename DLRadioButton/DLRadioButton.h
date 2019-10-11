@@ -85,6 +85,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) IBInspectable UIImage *iconSelected;
 
 /**
+ * @brief Image for radio button.
+ */
+@property (nonatomic) IBInspectable UIImage *imageLeft;
+
+/**
  * @brief Whether enable multiple selection, default is NO.
  */
 @property (nonatomic, getter = isMultipleSelectionEnabled) BOOL multipleSelectionEnabled;

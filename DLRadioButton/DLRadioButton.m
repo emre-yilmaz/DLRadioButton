@@ -7,6 +7,8 @@ static NSString * const kGeneratedIconName = @"Generated Icon";
 
 static BOOL _groupModifing = NO;
 
+UIImageView *leftImage;
+
 @implementation DLRadioButton
 
 @synthesize otherButtons = _otherButtons;
@@ -51,6 +53,11 @@ static BOOL _groupModifing = NO;
     [self setImage:self.iconSelected forState:UIControlStateSelected | UIControlStateHighlighted];
 }
 
+- (void)setimageLeft:(UIImage *)imageLeft {
+    _imageLeft = imageLeft;
+    [self setImage:self.imageLeft forState:UIControlStateNormal];
+}
+
 - (void)setMultipleSelectionEnabled:(BOOL)multipleSelectionEnabled {
     if (![DLRadioButton isGroupModifing]) {
         [DLRadioButton groupModifing:YES];
@@ -74,6 +81,13 @@ static BOOL _groupModifing = NO;
 }
 
 #pragma mark - Helpers
+-(void)drawImageLeft {
+    if (!leftImage) {
+        leftImage = [[UIImageView alloc] initWithImage:self.imageLeft];
+        leftImage.frame = CGRectMake(35, 8, 30, 30);
+        [self addSubview:ima];
+    }
+}
 
 - (void)drawButton {
     if (!self.icon || [self.icon.accessibilityIdentifier isEqualToString:kGeneratedIconName]) {
@@ -84,11 +98,8 @@ static BOOL _groupModifing = NO;
     }
     CGFloat marginWidth = self.marginWidth;
     BOOL isRightToLeftLayout = NO;
-    if (@available(iOS 9.0, *)) {
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0) {
         isRightToLeftLayout = [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:self.semanticContentAttribute] == UIUserInterfaceLayoutDirectionRightToLeft;
-        if(isRightToLeftLayout){
-          self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
-        }
     }
     if (self.isIconOnRight) {
         self.imageEdgeInsets = isRightToLeftLayout ?
@@ -99,9 +110,13 @@ static BOOL _groupModifing = NO;
         UIEdgeInsetsMake(0, -self.icon.size.width, 0, marginWidth + self.icon.size.width);
     } else {
         if (isRightToLeftLayout) {
-            self.titleEdgeInsets = UIEdgeInsetsMake(0, 0, 0, marginWidth);
+            self.imageEdgeInsets = UIEdgeInsetsMake(0, marginWidth, 0, 0);
         } else {
-            self.titleEdgeInsets = UIEdgeInsetsMake(0, marginWidth, 0, 0);
+            if (self.imageLeft) {
+                self.titleEdgeInsets = UIEdgeInsetsMake(0, marginWidth + 35, 0, 0);
+            }else {
+                self.titleEdgeInsets = UIEdgeInsetsMake(0, marginWidth, 0, 0);
+            }
         }
     }
 }
@@ -113,12 +128,12 @@ static BOOL _groupModifing = NO;
     CGFloat iconSize = self.iconSize;
     CGFloat iconStrokeWidth = self.iconStrokeWidth ? self.iconStrokeWidth : iconSize / 9;
     CGFloat indicatorSize = self.indicatorSize ? self.indicatorSize : iconSize * 0.5;
-
+    
     CGRect rect = CGRectMake(0, 0, iconSize, iconSize);
     CGContextRef context = UIGraphicsGetCurrentContext();
     UIGraphicsPushContext(context);
     UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0.0);
-
+    
     // draw icon
     UIBezierPath* iconPath;
     CGRect iconRect = CGRectMake(iconStrokeWidth / 2, iconStrokeWidth / 2, iconSize - iconStrokeWidth, iconSize - iconStrokeWidth);
@@ -131,7 +146,7 @@ static BOOL _groupModifing = NO;
     iconPath.lineWidth = iconStrokeWidth;
     [iconPath stroke];
     CGContextAddPath(context, iconPath.CGPath);
-
+    
     // draw indicator
     if (selected) {
         UIBezierPath* indicatorPath;
@@ -242,9 +257,9 @@ static BOOL _groupModifing = NO;
 
 - (void)setSelected:(BOOL)selected {
     if ((self.isMultipleSelectionEnabled ||
-        (selected != self.isSelected &&
-        [self.icon.accessibilityIdentifier isEqualToString:kGeneratedIconName] &&
-        [self.iconSelected.accessibilityIdentifier isEqualToString:kGeneratedIconName])) &&
+         (selected != self.isSelected &&
+          [self.icon.accessibilityIdentifier isEqualToString:kGeneratedIconName] &&
+          [self.iconSelected.accessibilityIdentifier isEqualToString:kGeneratedIconName])) &&
         self.animationDuration > 0.0) {
         CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"contents"];
         animation.duration = self.animationDuration;
@@ -280,6 +295,7 @@ static BOOL _groupModifing = NO;
 - (void)drawRect:(CGRect)rect {
     [super drawRect:rect];
     [self drawButton];
+    [self drawImageLeft];
 }
 
 @end
